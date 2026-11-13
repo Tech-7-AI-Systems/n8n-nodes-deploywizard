@@ -1,0 +1,55 @@
+{
+  "name": "n8n-nodes-deploywizard",
+  "version": "0.1.0",
+  "description": "n8n nodes for DeployWizard: receive and send WhatsApp messages through one API.",
+  "license": "MIT",
+  "homepage": "https://github.com/Tech-7-AI-Systems/n8n-nodes-deploywizard",
+  "keywords": [
+    "n8n-community-node-package",
+    "whatsapp",
+    "deploywizard"
+  ],
+  "author": {
+    "name": "Tech 7 AI Systems",
+    "email": "support@deploywizard.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tech-7-AI-Systems/n8n-nodes-deploywizard.git"
+  },
+  "main": "index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && cp nodes/DeployWizard/*.svg dist/nodes/DeployWizard/ && cp credentials/*.svg dist/credentials/",
+    "test": "npm run build && node --test --test-reporter=spec \"test/**/*.test.mjs\"",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/DeployWizardApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/DeployWizard/DeployWizard.node.js",
+      "dist/nodes/DeployWizard/DeployWizardTrigger.node.js"
+    ],
+    "strict": true
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "^0.56.1",
+    "@types/node": "^24.19.2",
+    "eslint": "^9.39.4",
+    "n8n-workflow": "^2.16.0",
+    "prettier": "^3.8.3",
+    "release-it": "^20.2.0",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
