@@ -287,3 +287,25 @@ test('groups: send can @mention the author or skip quoting', async () => {
   assert.equal(send.body.mention_author, true);
   assert.equal(send.body.quote, false);
 });
+
+test('Sandbox: listed last with a clear name, and trigger output says a message came from it', async () => {
+  const { channelOptions, withShortcuts } = await import('../dist/nodes/DeployWizard/GenericFunctions.js');
+  const ctx = mockContext({
+    params: {},
+    responses: {
+      'GET /v1/channels': {
+        data: [
+          { id: 'chn_sb', name: 'Sandbox', status: 'connected', phone: null, test: true },
+          { id: 'chn_real', name: 'Clinic', status: 'connected', phone: '+923001112233', test: false },
+        ],
+      },
+    },
+  });
+  const options = await channelOptions.call(ctx, true);
+  assert.deepEqual(options.map((o) => o.value), ['__all__', 'chn_real', 'chn_sb']);
+  assert.equal(options[2].name, 'Sandbox (test chat, nothing is sent on WhatsApp)');
+
+  const out = withShortcuts({ type: 'message.received', channel: { id: 'chn_sb', test: true }, message: { id: 'm', type: 'text', text: { body: 'hi' } } });
+  assert.equal(out.sandbox, true);
+  assert.equal(withShortcuts({ type: 'message.received', channel: { id: 'chn_real', test: false } }).sandbox, false);
+});
