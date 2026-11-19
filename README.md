@@ -5,7 +5,7 @@ n8n nodes for DeployWizard: receive and send WhatsApp messages through one API.
 ## Nodes
 
 **DeployWizard Trigger** — starts a workflow when a message or status update arrives.
-- Pick a number (or All Channels) and the events to listen for.
+- Pick a number (or All Channels) and the events to listen for. **Sandbox** is DeployWizard's test chat: see [Try it in the Sandbox](#try-it-in-the-sandbox).
 - Activating the workflow registers the webhook with DeployWizard automatically; deactivating removes it.
 - Every request is checked against its HMAC signature and rejected if older than 5 minutes.
 - Output: the fields you map, plus the full event under `details`:
@@ -16,6 +16,7 @@ n8n nodes for DeployWizard: receive and send WhatsApp messages through one API.
   | `text`, `from`, `contact_name` | The message text (or caption), the customer's number and name |
   | `message_type`, `media_url` | `text`, `image`, `audio`…, and a download link for media |
   | `conversation_id`, `message_id` | IDs to reply, react or hand off |
+  | `sandbox` | The message came from the Sandbox (DeployWizard's test chat), not a real customer |
   | `chat_owner` | Who handles the chat: `agent`, `waiting` (for a person) or `person` |
   | `asked_for_person` | DeployWizard thinks the customer asked for a human. Your agent decides |
   | `details` | The complete event, for anything else |
@@ -79,6 +80,16 @@ npm run lint
 
 Releases are published to npm by GitHub Actions with provenance (`.github/workflows/publish.yml`).
 Run `npm run release` locally: it bumps the version, tags and pushes, and the tag triggers the publish.
+
+## Try it in the Sandbox
+
+Every DeployWizard account has a **Sandbox**: a private test chat in the dashboard where you write as a customer. Nothing is sent on WhatsApp, so you can build a workflow before linking a phone.
+
+1. Add a **DeployWizard Trigger**, choose **Sandbox (test chat, nothing is sent on WhatsApp)** as the channel, and keep **Message Received**.
+2. Add a **DeployWizard** node: Resource **Message**, Operation **Send Text**, Send To **Reply in Conversation**, and a text such as `Thanks {{ $json.contact_name }}! You said: {{ $json.text }}`.
+3. Click **Execute workflow** (or publish it), then open **Sandbox** in the DeployWizard dashboard and send a message as the customer.
+
+The reply appears in the Sandbox chat, and its Activity panel shows the message reaching n8n (with the status code) and your reply being sent, delivered and read. When it works, switch the channel to your real number.
 
 ## AI agents and human handoff
 

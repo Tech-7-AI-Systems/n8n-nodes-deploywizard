@@ -53,11 +53,19 @@ export async function dwRequest(
 
 export async function channelOptions(this: ILoadOptionsFunctions, includeAll: boolean): Promise<INodePropertyOptions[]> {
   const res = await dwRequest.call(this, 'GET', '/v1/channels');
-  const options: INodePropertyOptions[] = (res.data as IDataObject[]).map((c) => ({
+  const channels = res.data as IDataObject[];
+  // Real numbers first; the Sandbox (DeployWizard's test chat) last, clearly named.
+  const real = channels.filter((c) => !c.test).map((c) => ({
     name: `${c.name} (${c.phone ?? c.status})`,
     value: c.id as string,
     description: `Status: ${c.status}`,
   }));
+  const sandbox = channels.filter((c) => c.test).map((c) => ({
+    name: 'Sandbox (test chat, nothing is sent on WhatsApp)',
+    value: c.id as string,
+    description: 'Write as a customer on the Sandbox page in DeployWizard; replies show up there',
+  }));
+  const options: INodePropertyOptions[] = [...real, ...sandbox];
   return includeAll ? [{ name: 'All Channels', value: '__all__' }, ...options] : options;
 }
 
@@ -71,6 +79,7 @@ export function withShortcuts(event: IDataObject): IDataObject {
   const conversation = (event.conversation ?? {}) as IDataObject;
   const hints = (event.hints ?? {}) as IDataObject;
   const group = event.group as IDataObject | undefined;
+  const channel = (event.channel ?? {}) as IDataObject;
   const type = message.type as string | undefined;
   const body = (type ? message[type] : undefined) as IDataObject | undefined;
   return {
@@ -81,6 +90,8 @@ export function withShortcuts(event: IDataObject): IDataObject {
     message_type: type ?? null,
     media_url: body?.url ?? null,
     conversation_id: conversation.id ?? null,
+    // The message came from the Sandbox (DeployWizard's test chat), not a real customer.
+    sandbox: Boolean(channel.test),
     message_id: message.id ?? null,
     // Who handles this chat right now: "agent", "waiting" (for a person) or "person".
     chat_owner: conversation.owner ?? 'agent',
